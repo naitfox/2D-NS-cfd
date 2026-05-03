@@ -1,0 +1,3374 @@
+JOURNAL OF COMPUTATIONAL PHYSICS 143, 90–124 (1998)
+ARTICLE NO. CP985962
+
+Fully Conservative Higher Order
+Finite Difference Schemes
+for Incompressible Flow
+Y. Morinishi,1 T. S. Lund, O. V. Vasilyev, and P. Moin
+Center for Turbulence Research, Stanford University, Stanford, California 94305
+Received September 9, 1997; revised February 24, 1998
+
+Conservation properties of the mass, momentum, and kinetic energy equations
+for incompressible flow are specified as analytical requirements for a proper set of
+discrete equations. Existing finite difference schemes in regular and staggered grid
+systems are checked for violations of the conservation requirements and a few important discrepancies are pointed out. In particular, it is found that none of the existing
+higher order schemes for a staggered mesh system simultaneously conserve mass,
+momentum, and kinetic energy. This deficiency is corrected through the derivation of
+a general family of fully conservative higher order accurate finite difference schemes
+for staggered grid systems. Finite difference schemes in a collocated grid system
+are also analyzed, and a violation of kinetic energy conservation is revealed. The
+predicted conservation properties are demonstrated numerically in simulations of inviscid white noise, performed in a two-dimensional periodic domain. The proposed
+fourth order schemes in a staggered grid system are generalized for the case of a nonuniform mesh, and the resulting scheme is used to perform large eddy simulations
+of turbulent channel flow. °c 1998 Academic Press
+
+1. INTRODUCTION
+
+The purpose of this research is to construct accurate finite difference schemes for incompressible unsteady turbulent flow simulations such as large eddy simulation (LES) or direct
+numerical simulation (DNS). Experience has shown that the convective terms must conserve kinetic energy if an incompressible, unsteady flow simulation is to be both stable and
+free of numerical dissipation. Arakawa [1] showed that when central differences are used,
+conservation of enstrophy in the absence of viscous dissipation is required for long time integration in the two-dimensional vorticity-streamfunction formulation. The corresponding
+1
+Permanent affiliation: Department of Mechanical Engineering, Nagoya Institute of Technology, Gokiso-cho,
+Showa-ku, Nagoya, 466, Japan.
+
+90
+0021-9991/98 $25.00
+c 1998 by Academic Press
+Copyright °
+All rights of reproduction in any form reserved.
+
+DIFFERENCE SCHEMES FOR INCOMPRESSIBLE FLOW
+
+91
+
+conserved variable is kinetic energy in the velocity-pressure formulation, and some energy
+conservative finite difference schemes have been developed for the Navier–Stokes equations in three dimensions. Staggered grid systems are usually required to obtain physically
+correct pressure fields. The standard second order accurate finite difference scheme [2] in a
+staggered grid system conserves kinetic energy and this scheme has proven useful for LES
+and DNS. However, the accuracy of the second order finite difference scheme is low and
+fine meshes are required [3]. Existing fourth order accurate convective schemes [4, 5] for the
+staggered grid system do not conserve kinetic energy. As we shall show later, these schemes
+produce erroneous results at sufficiently high Reynolds number. Higher order staggered grid
+schemes that conserve kinetic energy have not been presented in the literature.
+The conservation of kinetic energy is a consequence of the Navier–Stokes equations
+for incompressible flow in the inviscid limit. In contrast, kinetic energy conservation in a
+discrete sense is not a consequence of discrete momentum and discrete mass conservation.
+It is possible to derive numerical schemes that conserve both mass and momentum but not
+kinetic energy. It is also possible to derive schemes that conserve kinetic energy even though
+mass or momentum is not conserved. When kinetic energy is not conserved, two possibilities
+exist; (1) the errors are strictly dissipative and the simulation is stable or (2) the sign of the
+error is undetermined and the simulation is generally unstable. Upwind schemes fall into
+the first category. While these schemes are popular, their associated numerical dissipation
+adds a non-physical damping mechanism to the Navier–Stokes equations. This damping
+is acceptable in cases where the solution is expected to be smooth (such as in solutions
+to the laminar or time-averaged Navier–Stokes equations). Unsteady, three-dimensional
+turbulent simulations are much less tolerant of numerical dissipation [6] since it selectively
+removes energy from the dynamically important small-scale eddies. For this reason, nondissipative central-difference schemes or spectral methods [7] are usually preferred for
+turbulent simulations. Although central difference schemes do not give rise to numerical
+dissipation in general, they may not conserve kinetic energy. Most often non-conservative
+central difference schemes are unstable, but this instability may not be apparent unless the
+Reynolds number is sufficiently high. There are several examples in the literature where
+non-conservative schemes are presented and tested only for low Reynolds number. We shall
+show a few examples where these schemes become unstable as the Reynolds number is
+increased. These schemes can be particularly dangerous at intermediate Reynolds numbers,
+where the simulation is stable but adversely affected by the conservation errors.
+The paper is organized as follows. Conservation properties of the mass, momentum,
+and kinetic energy equations for incompressible flow are reviewed in Section 2. These
+conservation properties are regarded as analytical requirements for a proper set of discrete
+equations. Discrete operators used in this paper are defined in Section 3. Existing finite
+difference schemes in a regular grid system are checked for violations of the conservation
+properties in Section 4. In Section 5 we analyze existing staggered grid schemes and propose
+a new class of conservative schemes. Finite difference schemes for a collocated grid system,
+which have been used in recent unsteady incompressible flow simulations, are discussed
+in Section 6. Generalization of the proposed staggered-mesh fourth order accurate scheme
+to a non-uniform mesh is presented in Section 7. The treatment of non-periodic boundary
+conditions is also discussed in this section. Finally, numerical tests of the conservation
+properties and the accuracy of different numerical algorithms are performed in Section 8.
+Conservation properties of the numerical schemes are demonstrated on the example of
+two-dimensional, periodic, inviscid white noise simulations. The accuracy of the numerical
+
+92
+
+MORINISHI ET AL.
+
+algorithm for non-uniform mesh is verified through numerical tests involving the growth of
+instability eigenfunctions in two-dimensional plane channel flow. Large eddy simulations
+of turbulent channel flow are performed there as well and the results of the new fourth order
+accurate schemes are compared with those of the second order accurate algorithm.
+2. ANALYTICAL REQUIREMENTS
+
+The continuity and momentum equation describe the motion of incompressible flow.
+These equations are written symbolically as
+(Cont.) = 0,
+∂vi
++ (Conv.)i + (Pres.)i + (Visc.)i = 0,
+∂t
+
+(1)
+(2)
+
+where
+∂vi
+,
+∂ xi
+∂p
+,
+(Pres.)i ≡
+∂ xi
+∂τi j
+,
+(Visc.)i ≡
+∂x j
+(Cont.) ≡
+
+(3)
+(4)
+(5)
+
+where vi is the velocity vector, p is the pressure divided by density and τi j is the viscous
+stress. Henceforth, p will be referred to as pressure. (Conv.)i is a generic form of the
+convective term and will be defined below.
+The conservation properties of Eqs. (1) and (2) will now be established. Note that
+Eqs. (1) and (2) are of the form
+∂φ 1
++ Q(φ) + 2Q(φ) + 3Q(φ) + · · · = 0.
+∂t
+The term k Q(φ) is conservative if it can be written in divergence form,
+¢
+¡
+∂ k F j (φ)
+k
+Q(φ) = ∇ · (k F(φ)) =
+.
+∂x j
+
+(6)
+
+(7)
+
+To see that the divergence form is conservative, integrate Eq. (6) over the volume and make
+use of Gauss’s theorem for the flux terms k = 1, 2, . . ., all of which are assumed to satisfy
+Eq. (7):
+ZZZ
+ZZ
+∂
+φ dV = −
+(1 F(φ) + 2 F(φ) + 3 F(φ) + · · ·) · d S.
+(8)
+∂t
+V
+S
+From Eq. (8), we notice that the time derivative of the sum of φ in a volume V equals the
+sum of the flux k F(φ) on the surface S of the volume. In particular, the sum of φ never
+changes in periodic field if k Q(φ) is conservative for all k.
+Note that mass is conserved a priori since the continuity appears in divergence form. By
+the same token, the pressure (Pres.)i and viscous terms (Visc.)i are conservative a priori
+in the momentum equation. The convective term is also conservative a priori if it is cast
+
+DIFFERENCE SCHEMES FOR INCOMPRESSIBLE FLOW
+
+93
+
+in divergence form. This is not always the case, however, and we shall investigate it cast
+in alternative forms. To perform the analysis, we regard (Conv.)i as a generic form of the
+convective term in the momentum equation. At least four types of convective forms are
+often used in analytical or numerical studies. These forms are defined as
+(Div.)i ≡
+
+∂v j vi
+,
+∂x j
+
+(9)
+
+∂vi
+,
+∂x j
+
+(10)
+
+(Adv.)i ≡ v j
+
+1 ∂v j vi
+1 ∂vi
++ vj
+,
+2 ∂x j
+2 ∂x j
+µ
+¶
+∂v j
+∂vi
+1 ∂v j v j
+(Rot.)i ≡ v j
+−
+,
++
+∂x j
+∂ xi
+2 ∂ xi
+
+(Skew.)i ≡
+
+(11)
+(12)
+
+where (Div.)i , (Adv.)i , (Skew.)i , and (Rot.)i are referred to as divergence, advective, skewsymmetric, and rotational forms, respectively. As mentioned above, the divergence form is
+conservative a priori. The four forms are connected with each other through the following
+analytical relations:
+(Adv.)i = (Div.)i − vi · (Cont.),
+1
+1
+(Skew.)i = (Div.)i + (Adv.)i ,
+2
+2
+(Rot.)i = (Adv.)i .
+
+(13)
+(14)
+(15)
+
+We note that, analytically, there are only two independent convective forms, and the two are
+equivalent if (Cont.) = 0. It is also apparent that the advective, skew-symmetric, and rotational forms are conservative as long as the continuity equation is satisfied. From Eqs. (13)
+and (14), we can derive the relations
+1
+(Skew.)i = (Div.)i − vi · (Cont.)
+2
+1
+= (Adv.)i + vi · (Cont.).
+2
+
+(16)
+
+The transport equation of the square of a velocity component, for instance, v12 /2, is v1
+times the i = 1 component of Eq. (2):
+±
+∂v12 2
+(17)
++ v1 · (Conv.)1 + v1 · (Pres.)1 + v1 · (Visc.)1 = 0.
+∂t
+In the above equation, the convective term can be rewritten in the following forms corresponding to those in the momentum equation,
+±
+∂v j v12 2 1 2
++ v1 · (Cont.),
+v1 · (Div.)1 =
+∂x j
+2
+±
+2
+∂v j v1 2 1 2
+v1 · (Adv.)1 =
+− v1 · (Cont.),
+∂x j
+2
+±
+2
+∂v j v1 2
+v1 · (Skew.)1 =
+.
+∂x j
+
+(18)
+(19)
+(20)
+
+94
+
+MORINISHI ET AL.
+
+Note that the skew-symmetric form is conservative a priori in the velocity square equation.
+Since the rotational form is equivalent to the advective form, the four convective forms are
+energy conservative if (Cont.) = 0.
+The terms involving pressure and viscous stress in Eq. (17) can be rewritten in the forms
+∂ pv1
+∂v1
+−p
+,
+∂ x1
+∂ x1
+∂τ1 j v1
+∂v1
+− τ1 j
+.
+v1 · (Visc.)1 =
+∂x j
+∂x j
+
+v1 · (Pres.)1 =
+
+(21)
+(22)
+
+These terms are not conservative since they involve components of the pressure-strain and
+viscous dissipation.
+We can determine the conservation properties of v22 /2 and v32 /2 in the same manner as
+for v12 /2. The transport equation of kinetic energy, K ≡ vi vi /2, is vi times the i-component
+of Eq. (2) with summation over i:
+∂K
++ vi · (Conv.)i + vi · (Pres.)i + vi · (Visc.)i = 0.
+∂t
+
+(23)
+
+In Eq. (23), the conservation property of the convective term is determined in the same
+manner as for v12 /2. In addition, the terms involving presssure and viscous stress in Eq. (23)
+can be rewritten into the forms
+∂ pvi
+− p · (Cont.),
+∂ xi
+∂τi j vi
+∂vi
+− τi j
+.
+vi · (Visc.)i =
+∂x j
+∂x j
+
+vi · (Pres.)i =
+
+(24)
+(25)
+
+The pressure term in Eq. (23) is conservative if (Cont.) = 0. The viscous stress term in
+Eq. (25) is not conservative because the second term on the right-hand side of Eq. (25) is
+the kinetic energy dissipation. Table 1 provides a summary of the conservation properties
+of the convective, pressure, and viscous terms in the transport equations of vi , v12 /2, and K
+for incompressible flow.
+The objective of this work is to derive higher order accurate finite difference schemes
+that satisfy these properties in a discrete sense.
+
+TABLE 1
+Conservation Properties of the Convective, Pressure, and Viscous
+Terms in the vi , v21 /2, and K Equations
+Transport equations
+Terms in momentum eq.
+
+vi
+
+v12 /2
+
+K
+
+(Div.)
+(Adv.) = (Rot.)
+(Skew.)
+(Pres.)
+(Visc.)
+
+(
+s
+s
+(
+(
+
+s
+s
+(
+×
+×
+
+s
+s
+(
+s
+×
+
+Note. ( is conservative a priori, s is conservative if (Cont.) = 0, and × is
+not conservative.
+
+DIFFERENCE SCHEMES FOR INCOMPRESSIBLE FLOW
+
+95
+
+FIG. 1. Regular grid system.
+
+3. DISCRETE OPERATORS
+
+In this and the next three sections, analysis is limited to a uniform grid system, i.e., the
+grid spacings in each direction, h 1 , h 2 , h 3 , are constant. A generalization to non-uniform
+meshes is presented in Section 7.
+Conventional numerical algorithms based on a structured computational grid mostly fall
+into three classes: regular, staggered, and collocated grid systems. In the regular grid system
+the velocity components u i (i = 1, 2, 3) and pressure p are stored at the same points. The
+discretization of the continuity and momentum equation are centered at these points. An
+example of a regular grid system in a two-dimensional plane is shown in Fig. 1. In the
+staggered grid system the velocity components Ui (i = 1, 2, 3) are distributed around the
+pressure points. The continuity is centered at pressure points. The momentum equation
+corresponding to each velocity component is centered at the respective velocity point. An
+example of a staggered grid system in a two-dimensional plane is shown in Fig. 2. In the
+collocated grid system the velocity components u i (i = 1, 2, 3) and pressure p are defined at
+the same points, as in the regular grid system. The distinction comes through the definition
+of an auxiliary flux velocity, Fi (i = 1, 2, 3), which is obtained via interpolation. The flux
+velocity is distributed in space as in the staggered grid system. An example of a collocated
+grid system in a two-dimensional plane is shown in Fig. 3.
+Let the finite difference operator with stencil n acting on φ with respect to x1 be defined as
+¯
+φ(x1 + nh 1 /2, x2 , x3 ) − φ(x1 − nh 1 /2, x2 , x3 )
+δn φ ¯¯
+≡
+.
+δn x1 ¯x1 ,x2 ,x3
+nh 1
+
+FIG. 2. Staggered grid system.
+
+(26)
+
+96
+
+MORINISHI ET AL.
+
+FIG. 3. Collocated grid system.
+
+Also, we define an interpolation operator with stencil n acting on φ in the x1 direction as
+φ̄
+
+nx1 ¯¯
+
+x1 ,x2 ,x3
+
+≡
+
+φ(x1 + nh 1 /2, x2 , x3 ) + φ(x1 − nh 1 /2, x2 , x3 )
+.
+2
+
+(27)
+
+In addition, we define a special interpolation operator with stencil n of the product of φ and
+ψ in the x1 direction,
+¯
+1
+f nx1 ¯
+φψ
+≡ φ(x1 + nh 1 /2, x2 , x3 )ψ(x1 − nh 1 /2, x2 , x3 )
+x1 ,x2 ,x3
+2
+1
++ ψ(x1 + nh 1 /2, x2 , x3 ) φ(x1 − nh 1 /2, x2 , x3 ).
+2
+
+(28)
+
+Equations (26) and (27) are second order accurate approximations to the first derivative and
+function value, respectively,
+∂φ
+n2 ∂ 3φ 2
+n4 ∂ 5φ 4
+δn φ
+≃
++
+h1 +
+h + ···,
+3
+δn x1
+∂ x1
+24 ∂ x1
+1920 ∂ x15 1
+φ̄
+
+nx1
+
+≃φ+
+
+n2 ∂ 2φ 2
+n4 ∂ 4φ 4
+h1 +
+h + ···.
+2
+8 ∂ x1
+384 ∂ x14 1
+
+(29)
+(30)
+
+Combinations of the discrete operators can be used to make higher order accurate approximations to the first derivative and function value. For example, fourth order accurate
+approximations to the first derivative can be constructed as
+1 δ2 φ
+∂φ
+1 ∂ 5φ 4
+4 δ1 φ
+−
+≃
+−
+h + ···,
+3 δ1 x1
+3 δ2 x1
+∂ x1
+480 ∂ x15 1
+
+(31)
+
+9 δ1 φ
+1 δ3 φ
+∂φ
+3 ∂ 5φ 4
+−
+≃
+−
+h + ···,
+8 δ1 x1
+8 δ3 x1
+∂ x1
+640 ∂ x15 1
+
+(32)
+
+4 δ2 φ
+1 δ4 φ
+∂φ
+1 ∂ 5φ 4
+−
+≃
+−
+h + ···.
+3 δ2 x1
+3 δ4 x1
+∂ x1
+30 ∂ x15 1
+
+(33)
+
+Two fourth order accurate interpolations are
+1 ∂ 4φ 4
+4 1x1 1 2x1
+φ̄ − φ̄ ≃ φ −
+h + ···,
+3
+3
+96 ∂ x14 1
+
+(34)
+
+9 1x1 1 3x1
+3 ∂ 4φ 4
+h + ···.
+φ̄ − φ̄ ≃ φ −
+8
+8
+128 ∂ x14 1
+
+(35)
+
+DIFFERENCE SCHEMES FOR INCOMPRESSIBLE FLOW
+
+97
+
+Discrete operators in the x2 and x3 directions are defined in the same way as for the x1
+direction.
+The following identities will be needed to derive some relations later in the paper:
+nx j
+
+f
+δn φψ
+δn x j
+
+=φ
+
+δ2n ψ
+δ2n φ
++ψ
+,
+δ2n x j
+δ2n x j
+
+nx g nx j
+^
+[(φ ψ
+) · ψ ]nx j = φ̄ j ψψ
+,
+1
+1 f nx j
+nx
+nx
+nx
+φ̄ j ψ̄ j = φψ j + φψ
+,
+2
+2
+nx
+δ2n φ
+δn φ̄ j
+=
+,
+δn x j
+δ2n x j
+
+δn φ
+δn x j
+
+nx j
+
+φ
+
+δn ψ · φ̄
+δn x j
+
+nx j
+
+(37)
+(38)
+(39)
+
+mx
+
+mx
+
+δn φ i
+δn φ̄ i
+=
+,
+δn x j
+δn x j
+ψ
+
+(36)
+
+(40)
+
+nx j
+
+=
+
+δn ψ · φ̄
+δn x j
+
+=
+
+f nx j
+δn ψ
+1 δn ψ · φφ
+1
++ φφ
+.
+2
+δn x j
+2 δn x j
+
+−φ
+
+δn ψ
+,
+δn x j
+
+(41)
+(42)
+
+Note that x j appearing as a superscript does not follow the summation convention.
+We define two types of conservative forms in the discrete systems. k Q(φ) in Eq. (6) is
+(locally) conservative if the term can be written as
+¢
+¢
+¢
+¡
+¡
+¡
+δ1 k F j1 (φ)
+δ2 k F j2 (φ)
+δ3 k F j3 (φ)
+k
+Q(φ) =
++
++
++ ···.
+(43)
+δ1 x j
+δ2 x j
+δ3 x j
+This definition corresponds to the analytical conservative form of Eq. (7).
+k
+Q(φ) is globally conservative if the following relation holds in a periodic field,
+XXX
+k
+Q(φ)1V = 0,
+x1
+
+x2
+
+(44)
+
+x3
+
+where the sums that appear in Eq. (44) are taken over the periods in the respective directions
+and 1V ≡ h 1 h 2 h 3 is a constant in a uniform grid system. Note that in the periodic case
+local conservation also implies global conservation. Also note that the definition (44) is a
+discrete analogue of Eq. (8).
+4. FINITE DIFFERENCE SCHEMES IN A REGULAR GRID SYSTEM
+
+4.1. Continuity and Pressure Terms in a Regular Grid System
+We first examine the conservation property of the pressure term. As we have observed,
+the pressure term is analytically conservative in the transport equations of momentum and
+kinetic energy.
+In the regular grid system, the discrete continuity and pressure term are defined as
+δ2 u i
+= 0,
+δ2 xi
+δ2 p
+(Pres. − R2)i ≡
+,
+δ2 xi
+(Cont. − R2) ≡
+
+(45)
+(46)
+
+98
+
+MORINISHI ET AL.
+
+where R2 denotes a second order accurate approximation in a regular grid system. Fourth
+order approximations for the continuity and pressure term in the regular grid system are
+4 δ2 u i
+1 δ4 u i
+−
+= 0,
+3 δ2 xi
+3 δ4 xi
+4 δ2 p
+1 δ4 p
+−
+.
+(Pres. − R4)i ≡
+3 δ2 xi
+3 δ4 xi
+(Cont. − R4) ≡
+
+(47)
+(48)
+
+In the momentum equation, the pressure terms, Eqs. (46) and (48), are conservative a priori.
+Next, consider products of u i and the pressure terms which appear in Eq. (23). The products
+can be rewritten using Eq. (36) to give
+1x
+
+u i · (Pres. − R2)i =
+
+i
+δ1 ug
+ip
+− p · (Cont. − R2),
+δ1 xi
+
+u i · (Pres. − R4)i =
+
+i
+i
+4 δ1 ug
+1 δ2 ug
+ip
+ip
+−
+− p · (Cont. − R4).
+3 δ1 xi
+3 δ2 xi
+
+1x
+
+(49)
+
+2x
+
+(50)
+
+These products are conservative provided that the corresponding discrete continuity equations are satisfied. Notice that we need correspondence between the discrete continuity and
+pressure term to ensure that the pressure term conserves kinetic energy. That is why the
+residual term in Eq. (49) requires the continuity to be defined as in Eq. (45). It is also
+important to note that the combination of Eqs. (46) and (47) does not satisfy this property.
+Table 2 shows a summary of the conservation properties of the discrete pressure terms in a
+regular grid system.
+Before concluding this section, let us consider the Poisson equation for the pressure.
+The Poisson equation is often solved to satisfy the continuity constraint in computational
+algorithms of incompressible flow. For example, the projection stage onto a solenoidal field
+in fractional step methods [8] is
+vin+1 = vi∗ − α1t (Pres.)i ,
+(Cont.)
+
+n+1
+
+(51)
+
+= 0.
+
+(52)
+
+In Eq. (51), 1t is time increment and α is a constant that depends on the time marching
+method. The superscript refers to the discrete time level and ∗ denotes the non-solenoidal intermediate velocity field. The Poisson equation for the pressure is constructed by substituting
+TABLE 2
+Conservation Properties of Finite Difference Schemes
+for the Pressure Term in a Regular Grid System
+Transport equations
+FD schemes for momentum eq.
+
+ui
+
+K
+
+(Pres. − R2)
+(Pres. − R4)
+
+(
+(
+
+s2
+s4
+
+Note. ( is conservative a priori, s2 is locally conservative if
+(Cont. − R2) = 0, s4 is locally conservative if (Cont.−R4) = 0.
+
+DIFFERENCE SCHEMES FOR INCOMPRESSIBLE FLOW
+
+99
+
+Eq. (51) into Eq. (52) in a discrete sense. As we have seen, the proper correspondence between (Pres.)i and (Cont.) should be used.
+The proper combination for the second order scheme in the regular grid system, Eqs. (45)
+and (46), gives us the following discrete Poisson equation for the pressure:
+µ
+¶
+δ2
+δ2 p
+1
+(53)
+(Cont. − R2)∗ .
+=
+δ2 xi δ2 xi
+α1t
+The left-hand side of Eq. (53) generates a penta-diagonal matrix for a one-dimensional
+problem. The solution for pressure using Eq. (53) may not be physical, due to even-odd
+decoupling. The proper combination for a fourth order scheme in the regular grid system,
+Eqs. (47) and (48), gives the following discrete Poisson equation for the pressure:
+µ
+¶
+µ
+¶
+1 δ4 p
+1 δ4 p
+1 δ4 4 δ2 p
+1
+4 δ2 4 δ2 p
+−
+−
+(Cont. − R4)∗ . (54)
+−
+=
+3 δ2 xi 3 δ2 xi
+3 δ4 xi
+3 δ4 xi 3 δ2 xi
+3 δ4 xi
+α1t
+The left-hand side of Eq. (54) generates a non-diagonal (9 band) matrix for a one-dimensional
+problem. The matrix has even-odd coupling, but the coupling is weak. Therefore, the pressure given by Eq. (54) may not be physical.
+Due to the problem of odd-even decoupling, a staggered grid system is preferred over
+the regular grid system when a Poisson equation is solved for the pressure. Computational
+algorithms without the Poisson equation (for example, [9, 10]) can be constructed, however,
+and it is of interest to consider the conservation properties of such schemes.
+4.2. Standard Second Order Accurate Convective Schemes in a Regular Grid System
+Here we are interested in conservation properties of convective schemes. The usual second
+order accurate convective schemes in a regular grid system are defined as
+(Div. − R2S)i ≡
+
+δ2 u j u i
+,
+δ2 x j
+
+(55)
+
+δ2 u i
+,
+δ2 x j
+
+(56)
+
+(Adv. − R2S)i ≡ u j
+
+1 δ2 u j u i
+1 δ2 u i
++ uj
+,
+2 δ2 x j
+2 δ2 x j
+µ
+¶
+δ2 u j
+δ2 u i
+1 δ2 u j u j
+(Rot. − R2S)i ≡ u j
+−
+.
++
+δ2 x j
+δ2 xi
+2 δ2 xi
+(Skew. − R2)i ≡
+
+(57)
+(58)
+
+These schemes are direct applications of the standard second order accurate finite difference operator of Eq. (26) to the divergence, advective, skew-symmetric, and rotational
+forms, respectively (R2S stands for standard second order approximations on a regular grid).
+(Div.− R2S)i is conservative a priori in the momentum equation. Using Eq. (36), (Adv. −
+R2S)i and (Rot. − R2S)i can be rewritten as
+δ1 ug
+j ui
+δ1 x j
+
+1x j
+
+(Adv. − R2S)i =
+
+δ1 ug
+j ui
+δ1 x j
+
+1x j
+
+(Rot. − R2S)i =
+
+− u i · (Cont. − R2),
+−
+
+1 δ1 ug
+ju j
+2 δ1 xi
+
+1xi
+
++
+
+1 δ2 u j u j
+− u i · (Cont. − R2).
+2 δ2 xi
+
+(59)
+(60)
+
+Therefore, these forms are conservative in the momentum equation if (Cont. − R2S)i = 0.
+
+100
+
+MORINISHI ET AL.
+
+(Skew. − R2)i is the average of (Div. − R2S)i and (Adv. − R2S)i
+(Skew. − R2)i =
+
+1
+1
+(Div. − R2S)i + (Adv. − R2S)i .
+2
+2
+
+(61)
+
+As a consequence, (Skew. − R2)i is also conservative in the momentum equation if (Cont.
+− R2) = 0.
+Let us investigate the conservation properties of the convective schemes in the transport
+equation of u 21 /2. It is sufficient to consider the product of u 1 and the i = 1 component of
+the convective schemes. Using Eqs. (36) and (37), this product can be rewritten as
+1x
+
+u 1 · (Skew. − R2)1 =
+
+δ1 ū j j ug
+1u1
+δ1 x j
+
+1x j
+
+/2
+
+.
+
+(62)
+
+Therefore, (Skew. − R2)1 is conservative in the u 21 /2 equation. On the other hand, using
+Eq. (36), the product of u 1 and (Div. − R2S)1 can be rewritten as
+u 1 · (Div. − R2S)1 =
+
+δ1 (u 1g
+· u j u 1 )1x j
+δ2 u 1
+− u j u1
+.
+δ1 x j
+δ2 x j
+
+This term is not conservative since the second term on the right-hand side cannot be put
+in divergence form. It can be shown that (Adv. − R2S)1 and (Rot. − R2S)1 are also
+not conservative in the u 21 /2 equation. In the same way, we can determine the conservation properties of the convective schemes in the transport equation of kinetic energy,
+(K ≡ u i u i /2). The following relations can be derived:
+1x
+
+u i · (Skew. − R2)i =
+u i · (Rot. − R2S)i =
+
+δ1 ū j j ug
+i ui
+
+1x j
+
+/2
+
+δ1 x j
+
+,
+
+(63)
+
+δ1 (u ig
+· u j u j )1xi /2 1
+− u j u j · (Cont. − R2).
+δ1 xi
+2
+
+(64)
+
+(Skew. − R2)i is conservative a priori in the K equation. (Rot. − R2S)i is conservative in
+the K equation if (Cont. − R2) = 0. (Div. − R2S)i and (Adv. − R2S)i are not conservative
+in the K equation.
+Table 3 summarizes the conservation properties of the standard schemes, Eqs. (55), (56),
+(57), and (58). Comparing Table 3 and Table 1, we see that the only properly discretized
+TABLE 3
+Conservation Properties of Standard Second Order Accurate
+Convective Schemes in a Regular Grid System
+Transport equations
+FD schemes for momentum eq.
+
+ui
+
+u 21 /2
+
+K
+
+(Div. − R2S)
+(Adv. − R2S)
+(Rot. − R2S)
+(Skew. − R2)
+
+(
+s
+s
+s
+
+×
+×
+×
+(
+
+×
+×
+s
+(
+
+Note. ( is conservative a priori, s is conservative if (Cont. − R2) = 0, and × is
+not conservative.
+
+101
+
+DIFFERENCE SCHEMES FOR INCOMPRESSIBLE FLOW
+
+standard scheme is (Skew.− R2)i . Although (Rot.− R2S)i is conservative in the momentum
+and kinetic energy equations, it is not conservative in the equations for the square of the
+individual velocity components (u 21 , u 22 , u 23 ). This scheme has been used in the past but, as
+shown by Horiuti [10], leads to excessively large truncation error.
+4.3. Fully Conservative Second Order Accurate Convective Schemes
+in a Regular Grid System
+As shown in the previous section, (Skew. − R2)i is the only fully conservative standard
+convective scheme for a regular grid system. Fully conservative variants for the divergence
+and advective forms do exist, but they are different from the forms already considered.
+These forms can be constructed from (Skew. − R2)i by adding or subtracting factors of the
+velocity multiplied by the discrete continuity equation (see Eq. (16)):
+1
+(Skew. − R2)i = (Div. − R2)i − u i · (Cont. − R2)
+2
+1
+= (Adv. − R2)i + u i · (Cont. − R2) .
+2
+
+(65)
+
+By substituting Eqs. (45) and (57) into Eq. (65) and then using Eqs. (36), (38), (39), and
+(40), the divergence and advective forms that satisfy Eq. (65) are
+1x
+
+(Div. − R2)i ≡
+
+1x
+
+δ1 ū j j ū i j
+δ1 x j
+1x
+
+(Adv. − R2)i ≡ ū j j
+
+δ1 u i
+δ1 x j
+
+,
+
+(66)
+
+1x j
+
+.
+
+(67)
+
+(Div. − R2)i is a natural divergence form for a control volume centered at the mesh point.
+(Div. − R2)i and (Adv. − R2)i are related to (Skew. − R2)i through Eq. (65), and they are
+equivalent if (Cont. − R2) = 0. Using this fact, the conservation properties of (Div. − R2)i
+and (Adv.− R2)i are determined by the properties of (Skew.− R2)i . The results are shown in
+Table 4. The conservation properties of the convective schemes in Table 4 agree with those
+of Table 1. Therefore, (Div. − R2)i , (Adv. − R2)i , and (Skew. − R2)i are a proper set of
+convective schemes provided (Cont. − R2) = 0. The skew-symmetric form (Skew. − R2)i
+is related to the proper divergence and advective forms via
+(Skew. − R2)i =
+
+1
+1
+(Div. − R2)i + (Adv. − R2)i .
+2
+2
+
+(68)
+
+TABLE 4
+Conservation Properties of Proper Second Order Accurate Convective
+Schemes in a Regular Grid System
+Transport equations
+FD schemes for momentum eq.
+
+ui
+
+u 21 /2
+
+K
+
+(Div. − R2)
+(Adv. − R2)
+(Skew. − R2)
+
+(
+s
+s
+
+s
+s
+(
+
+s
+s
+(
+
+Note. Symbols are the same as Table 3.
+
+102
+
+MORINISHI ET AL.
+
+This relation should be used in place of Eq. (61) since the latter equation relies on a
+cancellation of errors on the right-hand side in order to arrive at a proper skew-symmetric
+form. (Adv. − R2)i is related to (Div. − R2)i through the following analogue of Eq. (13):
+(Adv. − R2)i = (Div. − R2)i − u i · (Cont. − R2).
+
+(69)
+
+According to Eq. (15), the rotational and advective forms are equivalent, thus the following discrete relation is assumed:
+(Rot. − R2)i = (Adv. − R2)i .
+
+(70)
+
+Starting with Eq. (67) and then using Eqs. (36), (38), (39), and (40), the discrete rotational
+form that satisfies Eq. (70) is
+Ã
+!
+1x j
+1xi
+1 δ2 u j u j
+1x j δ1 u i
+1xi δ1 u j
+− ū j
+.
+(71)
++
+(Rot. − R2)i = ū j
+δ1 x j
+δ1 xi
+2 δ2 xi
+Although the above relation is written in a rotational like form, it is equivalent to Eq. (67).
+Since the two forms are equivalent we shall not discuss the rotational form further.
+4.4. Fully Conservative Fourth Order Accurate Convective Schemes
+for a Regular Grid System
+In a regular grid system, proper fourth order accurate convective schemes are obtained
+via a straightforward extension of the proper second order schemes:
+1x
+
+(Div. − R4)i ≡
+
+1x
+
+4 1x δ1 u i
+(Adv. − R4)i ≡ ū j j
+3
+δ1 x j
+(Skew. − R4)i ≡
+
+2x
+
+2x
+
+j
+j
+j
+j
+4 δ1 ū j ū i
+1 δ2 ū j ū i
+−
+,
+3 δ1 x j
+3 δ2 x j
+
+1x j
+
+1 2x δ2 u i
+− ū j j
+3
+δ2 x j
+
+(72)
+
+2x j
+
+,
+
+1
+1
+(Div. − R4)i + (Adv. − R4)i .
+2
+2
+
+(73)
+(74)
+
+(Div. − R4)i was used by Horiuti [11], and is conservative a priori in the momentum
+equation. Using Eqs. (36) and (37), u 1 times (Skew. − R4)i can be written as
+1x
+
+u 1 · (Skew. − R4)1 =
+
+2x
+
+1x j
+2x j
+j
+/2 1 δ2 ū j j ug
+/2
+4 δ1 ū j ug
+1u1
+1u1
+−
+.
+3
+δ1 x j
+3
+δ2 x j
+
+(75)
+
+Therefore, (Skew. − R4)i is conservative a priori in the transport equation of u 21 /2. The
+conservation property of (Skew. − R4)i in the transport equation of kinetic energy follows
+directly. (Adv. − R4)i and (Div. − R4)i are connected through the equation
+(Adv. − R4)i = (Div. − R4)i − u i · (Cont. − R4).
+
+(76)
+
+As a consequence, (Div. − R4)i , (Adv. − R4)i , and (Skew. − R4)i are all equivalent if
+(Cont. − R4) = 0, and the conservation properties of (Adv. − R4) and (Div. − R4) can
+be determined by using Eq. (76). Table 5 summarizes the results. It is evident that these
+schemes are a proper set of convective schemes provided (Cont. − R4) = 0.
+
+103
+
+DIFFERENCE SCHEMES FOR INCOMPRESSIBLE FLOW
+
+TABLE 5
+Conservation Properties of Proper Fourth Order Accurate Convective
+Schemes in a Regular Grid System
+Transport equations
+FD schemes for momentum eq.
+
+ui
+
+u 21 /2
+
+K
+
+(Div. − R4)
+(Adv. − R4)
+(Skew. − R4)
+
+(
+s
+s
+
+s
+s
+(
+
+s
+s
+(
+
+Note. ( is conservative a priori and s is conservative if (Cont. − R4) = 0.
+
+5. FINITE DIFFERENCE SCHEMES IN A STAGGERED GRID SYSTEM
+
+5.1. Continuity and Pressure Terms in a Staggered Grid System
+In a staggered grid system, we define the discrete continuity and pressure terms as
+δ1 Ui
+= 0,
+δ1 xi
+δ1 p
+(Pres. − S2)i ≡
+,
+δ1 xi
+(Cont. − S2) ≡
+
+(77)
+(78)
+
+where the S2 denotes second order accuracy in a staggered grid system. Note that the finite
+difference stencils cover only one mesh spacing since the derivatives are needed between
+the nodal values. Analogous fourth order approximations are
+1 δ3 Ui
+9 δ1 Ui
+−
+= 0,
+8 δ1 xi
+8 δ3 xi
+9 δ1 p
+1 δ3 p
+−
+.
+(Pres. − S4)i ≡
+8 δ1 xi
+8 δ3 xi
+(Cont. − S4) ≡
+
+(79)
+(80)
+
+Local kinetic energy cannot be defined unambiguously in a staggered grid system since
+the individual velocity components are defined at different locations in space. Some sort
+of interpolation must be used in order to obtain the kinetic energy at the same point. The
+required interpolations for the pressure terms in the K equations are
+δ1 p
+δ1 xi
+
+1xi
+
+1 δ3 p
+− Ui
+8 δ3 xi
+
+3xi
+
+Ui
+9 δ1 p
+Ui
+8 δ1 xi
+
+1xi
+
+=
+
+δ1 Ui p̄ 1xi
+− p · (Cont. − S2),
+δ1 xi
+
+(81)
+
+=
+
+9 δ1 Ui p̄ 1xi
+1 δ3 Ui p̄ 3xi
+−
+− p · (Cont. − S4).
+8 δ1 xi
+8 δ3 xi
+
+(82)
+
+The following relations can be used to show global conservation unambiguously:
+XXX
+
+XXX
+
+1x
+
+δ1 p i
+Ui · (Pres. − S2)i =
+Ui
+,
+(83)
+δ1 xi
+x1 x2 x3
+x1 x2 x3
+Ã
+!
+XXX
+X X X 9 δ1 p 1xi 1 δ3 p 3xi
+. (84)
+Ui · (Pres. − S4)i =
+Ui
+− Ui
+8 δ1 xi
+8 δ3 xi
+x
+x
+x
+x
+x
+x
+1
+
+2
+
+3
+
+1
+
+2
+
+3
+
+Therefore, Eqs. (78) and (80) are globally conservative if the corresponding discrete
+
+104
+
+MORINISHI ET AL.
+
+TABLE 6
+Conservation Properties of Finite Difference Schemes
+for the Pressure Term in a Staggered Grid System
+Transport equations
+FD schemes for momentum eq.
+
+Ui
+
+K
+
+(Pres. − S2)
+(Pres. − S4)
+
+(
+(
+
+s2
+s4
+
+Note. ( is conservative a priori, s2 is locally conservative if
+(Cont. − S2) = 0, s4 is locally conservative if (Cont. − S4) = 0.
+
+continuity equations are satisfied. Table 6 shows a summary of the conservation properties
+of the discrete pressure term in a staggered grid system.
+The proper combination between second order continuity and pressure terms in a staggered grid system, Eqs. (77) and (78), give us the following discretized Poisson equation
+for the pressure (∗ refers to the intermediate velocity field in the fractional step scheme; see
+Eq. (51)):
+µ
+¶
+δ1 p
+1
+δ1
+(85)
+(Cont. − S2)∗ .
+=
+δ1 xi δ1 xi
+α1t
+Similarly, the proper combination between fourth order continuity and pressure terms,
+Eqs. (79) and (80), gives
+µ
+¶
+µ
+¶
+1 δ3 p
+1 δ3 p
+9 δ1 p
+1 δ3
+9 δ1 p
+1
+9 δ1
+−
+−
+(Cont. − S4)∗ . (86)
+−
+=
+8 δ1 xi 8 δ1 xi
+8 δ3 xi
+8 δ3 xi 8 δ1 xi
+8 δ3 xi
+α1t
+The left-hand side of Eq. (85) results in a tri-diagonal matrix for one-dimensional problems,
+whereas the left-hand side of Eq. (86) results in a septa-diagonal matrix. Non-oscillatory
+solutions for the pressure are expected from Eqs. (85) and (86), since both matrices have
+strong even-odd coupling.
+5.2. Proper Second Order Accurate Convective Schemes in a Staggered Grid System
+As we have already mentioned, local kinetic energy K ≡ Ui Ui /2 cannot be defined
+uniquely in a staggered grid system. Let us assume that a term is (locally) conservative in
+the transport equation of K if the term is (locally) conservative in the transport equations of
+U12 /2, U22 /2, and U32 /2. Since the conservation properties of U22 /2 and U32 /2 are estimated
+in the same manner as for U12 /2, only the conservation properties of the convective schemes
+in the momentum and U12 /2 equations need to be considered.
+Let us define second order accurate convective schemes in a staggered grid system as
+1x j
+
+(Div. − S2)i ≡
+
+i
+δ1 Ū 1x
+j Ūi
+
+δ1 x j
+
+i
+(Adv. − S2)i ≡ Ū 1x
+j
+
+(Skew. − S2)i ≡
+
+δ1 Ui
+δ1 x j
+
+,
+
+(87)
+
+1x j
+
+,
+
+1
+1
+(Div. − S2)i + (Adv. − S2)i .
+2
+2
+
+(88)
+(89)
+
+105
+
+DIFFERENCE SCHEMES FOR INCOMPRESSIBLE FLOW
+
+TABLE 7
+Conservation Properties of Proper Second Order Accurate Convective
+Schemes in a Staggered Grid System
+Transport equations
+FD schemes for momentum eq.
+
+Ui
+
+U12 /2
+
+K
+
+(Div. − S2)
+(Adv. − S2)
+(Skew. − S2)
+
+(
+s
+s
+
+s
+s
+(
+
+s
+s
+(
+
+Note. ( is conservative a priori and s is conservative if (Cont. − S2) = 0.
+
+Using Eqs. (40) and (41), (Adv. − S2)i is connected with (Div. − S2)i via
+1xi
+
+(Adv. − S2)i = (Div. − S2)i − Ui · (Cont. − S2) .
+
+(90)
+
+(Div. − S2)i is the standard divergence form in a staggered grid system [2]. (Adv. − S2)i
+was proposed by Kajishima [5]. (Skew.− S2)i is equivalent to the scheme that was proposed
+by Piacsek and Williams [12].
+Clearly (Div. − S2)i is conservative a priori in the momentum equation. Using Eqs. (41)
+and (42), the product between U1 and (Skew. − S2)1 can be rewritten as
+
+U1 · (Skew. − S2)1 =
+
+1 g
+δ1 Ū 1x
+j U1 U1
+
+1x j
+
+/2
+
+δ1 x j
+
+.
+
+(91)
+
+Therefore, (Skew. − S2)1 is conservative a priori in the transport equation of U12 /2.
+By using Eq. (90), the conservation properties of the various schemes are determined.
+The results are summarized in Table 7. These schemes are seen to be conservative provided
+that the continuity equation is satisfied.
+5.3. Existing Fourth Order Accurate Convective Schemes in a Staggered Grid System
+Before proposing fully conservative fourth order accurate convective schemes, we first
+examine some existing fourth order schemes in a staggered grid system. By simple extension
+of the proper second order accurate convective schemes, we obtain the schemes
+1x j
+
+3x j
+
+(Div. − S4A)i ≡
+
+1x
+9 δ1 Ū j i Ūi
+8
+δ1 x j
+
+(Adv. − S4A)i ≡
+
+9 1xi δ1 Ui
+Ū
+8 j δ1 x j
+
+(Skew. − S4A)i ≡
+
+1
+1
+(Div. − S4A)i + (Adv. − S4A)i .
+2
+2
+
+−
+1x j
+
+3x
+1 δ3 Ū j i Ūi
+8
+δ3 x j
+
+1
+δ Ui
+i 3
+− Ū 3x
+8 j δ3 x j
+
+,
+
+(92)
+
+3x j
+
+,
+
+(93)
+(94)
+
+(Div. − S4A)i was used by A-Domis [4], and is conservative a priori in the momentum
+equation. Using Eqs. (41) and (42), the product between U1 and (Skew. − S4A)1 can be
+
+106
+
+MORINISHI ET AL.
+
+written as
+9 δ1 Ū j i Ug
+1 U1
+8
+δ1 x j
+1x
+
+U1 · (Skew. − S4A)1 =
+
+1x j
+
+/2
+
+1 δ3 Ū j i Ug
+1 U1
+8
+δ3 x j
+3x
+
+−
+
+3x j
+
+/2
+
+.
+
+(95)
+
+Therefore, (Skew. − S4A)1 is conservative a priori in the transport equation of U12 /2. The
+difference between (Adv. − S4A)i and (Div. − S4A)i is
+Ã
+!
+1x
+3x
+9 δ1 U j i 1 δ3 U j i
+−
+.
+(96)
+(Adv. − S4A)i = (Div. − S4A)i − Ui ·
+8 δ1 x j
+8 δ3 x j
+This equation is the discrete analogue of Eq. (13). However, (Adv. − S4A)i is not equal
+to (Div. − S4A)i , because the term that appears on the right-hand side of Eq. (96) differs
+from the properly discretized fourth order continuity equation in a staggered grid system
+(Eq. (79)). The difference between the right-hand side of Eq. (96) and Eq. (79) scales like
+!
+Ã
+1x
+3x
+9 δ1 U j i 1 δ3 U j i
+−
+(97)
+− (Cont. − S4) = O(h 4 ),
+8 δ1 x j
+8 δ3 x j
+where h is grid spacing. While the error is small it is not zero and therefore (Adv. − S4A)i
+does not conserve momentum. As a consequence (Skew. − S4A)i does not conserve momentum either. Furthermore, using Eqs. (95), (96), and (94) it can be shown that (Div. −
+S4A)i and (Adv. − S4A)i do not conserve U12 /2. Table 8 shows the conservation properties of (Div. − S4A)i , (Adv. − S4A)i , and (Skew. − S4A)i . It is evident that each of these
+schemes has one or more conservation defects. In spite of this, it might be expected that
+some of these schemes could still be used since the errors in the table are O(h 4 ). Indeed,
+(Div. − S4A)i was used in [4] to obtain good results for LES of isotropic decaying turbulence at low Reynolds number. However, we observed numerical instabilities in LES
+of channel flow at high Reynolds number with the same scheme. The instability may be
+avoided by using (Skew. − S4A)i (since it conserves kinetic energy) but momentum would
+not be conserved in this case.
+Another possible set of fourth order accurate convective schemes in a staggered grid
+system is
+·µ
+¶µ
+¶¸
+9 1xi 1 3xi
+9 1x j 1 3x j
+9 δ1
+Ū − Ū j
+Ū − Ūi
+(Div. − S4K )i ≡
+8 δ1 x j
+8 j
+8
+8 i
+8
+·µ
+¶µ
+¶¸
+1 δ3
+9 1xi 1 3xi
+9 1x j 1 3x j
+−
+Ū − Ū j
+Ū − Ūi
+,
+(98)
+8 δ3 x j
+8 j
+8
+8 i
+8
+TABLE 8
+Conservation Properties of A-Domis Type Fourth Order Accurate
+Convective Schemes in a Staggered Grid System
+Transport equations
+FD schemes for momentum eq.
+
+Ui
+
+U12 /2
+
+K
+
+(Div. − S4A)
+(Adv. − S4A)
+(Skew. − S4A)
+
+(
+4
+4
+
+4
+4
+(
+
+4
+4
+(
+
+Note. ( is conservative a priori. 4 has an error of O(h 4 ) even if (Cont. − S4) = 0.
+
+107
+
+DIFFERENCE SCHEMES FOR INCOMPRESSIBLE FLOW
+
+(Adv. − S4K )i ≡
+
+(Skew. − S4K )i ≡
+
+µ
+¶µ
+¶1x j
+9 9 1xi 1 3xi
+1 δ3 Ui
+9 δ1 Ui
+−
+Ū j − Ū j
+8 8
+8
+8 δ1 x j
+8 δ3 x j
+µ
+¶µ
+¶3x j
+1 9 1xi 1 3xi
+1 δ3 Ui
+9 δ1 Ui
+−
+−
+,
+Ū j − Ū j
+8 8
+8
+8 δ1 x j
+8 δ3 x j
+
+(99)
+
+1
+1
+(Div. − S4K )i + (Adv. − S4K )i .
+2
+2
+
+(100)
+
+(Adv. − S4K )i was proposed by Kajishima [5] as the extension of his second order scheme
+(Eq. (88)). Unfortunately, the conservation properties of Eqs. (98), (99), and (100) are similar
+to those of Eqs. (92), (93), and (94), and thus each of them has at least one conservation
+error.
+5.4. A Proposal for Fully Conservative, Higher Order Accurate Convective Schemes in a
+Staggered Grid System
+In this section we show how to construct fully conservative convective schemes for a
+staggered grid system having arbitrary order of accuracy. We start with the following set of
+fourth order accurate schemes:
+(Div. − S4)i ≡
+
+9 δ1
+8 δ1 x j
+
+·µ
+
+¶
+¸
+·µ
+¶
+¸
+9 1xi 1 3xi
+1 δ3
+9 1xi 1 3xi
+3x
+Ūi1xi −
+Ū j j ,
+Ū j − Ū j
+Ū j − Ū j
+8
+8
+8 δ3 x j
+8
+8
+(101)
+
+µ
+
+¶
+
+δ1 Ui
+δ1 x j
+
+µ
+
+1x j
+
+(Adv. − S4)i ≡
+
+9 9 1xi 1 3xi
+Ū − Ū j
+8 8 j
+8
+
+(Skew. − S4)i ≡
+
+1
+1
+(Div. − S4)i + (Adv. − S4)i .
+2
+2
+
+−
+
+1 9 1xi 1 3xi
+Ū − Ū j
+8 8 j
+8
+
+¶
+
+δ3 Ui
+δ3 x j
+
+3x j
+
+,
+
+(102)
+(103)
+
+We see that (Div.− S4)i is conservative a priori in the momentum equation. Using Eqs. (41)
+and (42), the product between U1 and (Skew. − S4)1 can be rewritten as
+1x j #
+¶
+9 1x1 1 3x1 Ug
+1 U1
+Ū − Ū j
+8 j
+8
+2
+"µ
+3x j #
+¶
+1 δ3
+9 1x1 1 3x1 Ug
+1 U1
+−
+Ū − Ū j
+.
+8 δ3 x j
+8 j
+8
+2
+
+9 δ1
+U1 · (Skew. − S4)1 =
+8 δ1 x j
+
+"µ
+
+(104)
+
+Thus, (Skew. − S4)i is conservative a priori in the transport equation of U12 /2. Using
+Eqs. (40) and (41), the relation between (Adv. − S4)i and (Div. − S4)i is
+¸
+9
+1
+1xi
+3xi
+. (105)
+(Adv. − S4)i = (Div. − S4)i − Ui · (Cont. − S4) − (Cont. − S4)
+8
+8
+·
+
+This equation is a proper discrete analog of Eq. (13), and (Adv. − S4)i , (Div. − S4)i and
+(Skew. − S4)i are equivalent if (Cont. − S4) = 0. Table 9 shows the conservation properties
+of the proposed schemes. Comparing Table 9 with Table 1, we see that the present schemes
+are fully conservative provided that the discrete continuity relation is satisfied.
+
+108
+
+MORINISHI ET AL.
+
+TABLE 9
+Conservation Properties of Proper Fourth Order Accurate Convective
+Schemes in a Staggered Grid System
+Transport equations
+FD schemes for momentum eq.
+
+Ui
+
+U12 /2
+
+K
+
+(Div. − S4)
+(Adv. − S4)
+(Skew. − S4)
+
+(
+s
+s
+
+s
+s
+(
+
+s
+s
+(
+
+Note. ( is conservative a priori and s is conservative if (Cont. − S4) = 0.
+
+Higher order fully conservative finite difference schemes can be constructed in the same
+way as for the fourth order schemes. The pattern for a nth order accurate scheme can be seen
+most clearly in the divergence form. The basic procedure is to make multiple evaluations of
+the convective term on stencils spanning 1, 3, . . . , n − 1 mesh spacings and then combine
+the results with the appropriate nth order accurate interpolation operator. In making the
+evaluation on stencil of size m, the convection velocity must be interpolated with the nth
+order accurate interpolation operator, whereas the flux velocity must be interpolated with a
+2nd order operator having a m-point stencil. Thus in general we can write
+n/2
+X
+
+δ(2k−1)
+αk
+(Div. − Sn)i ≡
+δ(2k−1) x j
+k=1
+
+"Ã n/2
+X
+
+!
+αl Ū j
+
+(2l−1)xi
+
+#
+¡ (2k−1)x j ¢
+Ū j
+,
+
+(106)
+
+l=1
+
+where the αk are the interpolation weights (see Eqs. (32) and (35)). A similar general formula
+exists for the advective form
+
+(Adv. − Sn)i ≡
+
+n/2
+X
+k=1
+
+αk
+
+Ã n/2
+X
+
+!
+i
+αl Ū (2l−1)x
+j
+
+l=1
+
+δ(2k−1) Ui
+δ(2k−1) x j
+
+(2k−1)x j
+
+.
+
+(107)
+
+The continuity and pressure terms involve straightforward applications of the higher order
+interpolation operators:
+(Cont. − Sn) ≡
+
+n/2
+X
+
+αk
+
+δ(2k−1) Ui
+= 0,
+δ(2k−1) xi
+
+(108)
+
+αk
+
+δ(2k−1) p
+.
+δ(2k−1) xi
+
+(109)
+
+k=1
+
+(Pres. − Sn)i ≡
+
+n/2
+X
+k=1
+
+As an example, the proper set of sixth order schemes in a staggered grid system is
+(Cont. − S6) ≡
+
+150 δ1 Ui
+25 δ3 Ui
+3 δ5 Ui
+−
++
+= 0,
+128 δ1 xi
+128 δ3 xi
+128 δ5 xi
+
+(110)
+
+(Pres. − S6)i ≡
+
+150 δ1 p
+25 δ3 p
+3 δ5 p
+−
++
+,
+128 δ1 xi
+128 δ3 xi
+128 δ5 xi
+
+(111)
+
+DIFFERENCE SCHEMES FOR INCOMPRESSIBLE FLOW
+
+(Div. − S6)i ≡
+
+109
+
+¶
+¸
+150 1xi
+25 3xi
+3 5xi
+1x
+Ūi j
+Ū j −
+Ū j +
+Ū j
+128
+128
+128
+·µ
+¶
+¸
+25 3xi
+3 5xi
+150 1xi
+25 δ3
+3x j
+Ū −
+Ū +
+Ū
+Ūi
+−
+128 δ3 x j
+128 j
+128 j
+128 j
+·µ
+¶
+¸
+3 δ5
+150 1xi
+25 3xi
+3 5xi
+5x
++
+Ū j −
+Ū j +
+Ū j
+Ūi j , (112)
+128 δ5 x j
+128
+128
+128
+150 δ1
+128 δ1 x j
+
+·µ
+
+µ
+¶
+1x j
+150 150 1xi
+25 3xi
+3 5xi δ1 Ui
+Ū −
+Ū +
+Ū
+(Adv. − S6)i ≡
+128 128 j
+128 j
+128 j
+δ1 x j
+µ
+¶
+3x j
+25 150 1xi
+25 3xi
+3 5xi δ3 Ui
+−
+Ū −
+Ū +
+Ū
+128 128 j
+128 j
+128 j
+δ3 x j
++
+(Skew. − S6)i ≡
+
+µ
+¶
+5x j
+3 150 1xi
+25 3xi
+3 5xi δ5 Ui
+,
+Ū j −
+Ū j +
+Ū j
+128 128
+128
+128
+δ5 x j
+
+1
+1
+(Div. − S6)i + (Adv. − S6)i .
+2
+2
+
+(113)
+(114)
+
+6. FINITE DIFFERENCE SCHEMES IN A COLLOCATED GRID SYSTEM
+
+The main advantage of a staggered grid system is that it results in a non-oscillatory
+pressure field. On the other hand, a regular grid system is convenient in a curvilinear grid
+system. A collocated grid system supposedly has the merits of both regular and staggered
+grid systems, and has mainly been used for steady flow simulations. In the subsections
+below, the conservation properties of these schemes are considered. Such an analysis is
+useful since some unsteady flows have recently been simulated using the collocated grid
+system (for example, [13]).
+6.1. Second Order Accurate Schemes in a Collocated Grid System
+We first consider second order accurate finite difference schemes in a collocated grid
+system. The discrete continuity equation is centered at the definition point of p, and makes
+use of the interpolated flux velocity, Fi , rather than the velocity itself:
+(Cont. − C2) ≡
+
+δ1 Fi
+= 0.
+δ1 xi
+
+(115)
+
+This is similar to the procedure used in the staggered grid system. The pressure term in the
+momentum equation is discretized using (Pres. − R2)i of Eq. (46). This is similar to the
+regular grid system. Therefore, the projection stage onto a solenoidal field in the fractional
+step method is
+u in+1 = u i∗ − α1t (Pres. − R2)i ,
+(Cont. − C2)
+
+n+1
+
+= 0.
+
+(116)
+(117)
+
+This projection stage corresponds to Eqs. (51) and (52). In this stage, the velocity components Fi are computed via the following special interpolation formula [14]
+Fin+1 = u i∗
+
+1xi
+
+− α1t (Pres. − S2)i .
+
+(118)
+
+110
+
+MORINISHI ET AL.
+
+(Pres. − S2)i is the pressure term of Eq. (78) that is used in the staggered grid system.
+The Poisson equation for the pressure for the collocated grid system is constructed by
+substituting Eq. (118) into Eq. (117) in a discrete sense.
+δ1
+δ1 xi
+
+µ
+
+δ1 p
+δ1 xi
+
+¶
+
+1xi
+
+=
+
+1 δ1 u i∗
+.
+α1t δ1 xi
+
+(119)
+
+The left-hand side of Eq. (119) is the same discrete form of Eq. (85) in the staggered grid
+system, and as a result, non-oscillatory pressure solutions are expected from this equation.
+The following convective schemes are equivalent if (Cont. − C2) = 0:
+1x
+
+(Div. − C2)i ≡
+
+δ1 F j ū i j
+,
+δ1 x j
+
+(Adv. − C2)i ≡ F j
+(Skew. − C2)i ≡
+
+δ1 u i
+δ1 x j
+
+(120)
+
+1x j
+
+,
+
+(121)
+
+1
+1
+(Div. − C2)i + (Adv. − C2)i .
+2
+2
+
+(122)
+
+(Adv. − C2)i is connected with (Div. − C2)i through
+(Adv. − C2)i = (Div. − C2)i − u i · (Cont. − C2).
+
+(123)
+
+(Div. − C2)i is conservative a priori in the momentum equation. The product between u 1
+and (Skew. − C2)1 can be written as
+δ1 F j ug
+1u1
+u 1 · (Skew. − C2)1 =
+δ1 x j
+
+1x j
+
+/2
+
+.
+
+(124)
+
+Therefore, (Skew. − C2)1 is conservative in the transport equation of u 21 /2. In the same way,
+(Skew. − C2)i is conservative a priori in the transport equation of kinetic energy K . Using
+Eq. (123), the conservation properties of (Div. − C2)i , (Adv. − C2)i , and (Skew. − C2)i
+are determined. The result is that (Div. − C2)i , (Adv. − C2)i , and (Skew. − C2)i are fully
+conservative provided (Cont. − C2) = 0.
+Next, we investigate the pressure term in a collocated grid system. The pressure term
+is discretized using (Pres. − R2)i , which was shown in Eq. (49) to be conservative in the
+transport equation of kinetic energy if (Cont.− R2) = 0. However, the collocated continuity
+equation is (Cont.−C2) = 0 and thus (Pres.− R2)i is not locally kinetic energy conserving
+in a collocated grid system. In addition, it can be shown that (Pres. − R2)i is not globally
+conservative either in a collocated grid system. It can be shown that the difference between
+(Cont. − R2) and (Cont. − C2) scales like
+(Cont. − R2) − (Cont. − C2) = O(1t · h 2 ).
+
+(125)
+
+Therefore, the pressure term has a conservation error of O(1t · h 2 ) in the transport equation
+of kinetic energy. As will be shown in the following section, the conservation error appears
+to be dissipative and thus the collocated grid scheme may be stable although still affected by
+conservation error. Table 10 shows the conservation properties for the second order accurate
+finite difference schemes in a collocated grid system.
+
+111
+
+DIFFERENCE SCHEMES FOR INCOMPRESSIBLE FLOW
+
+TABLE 10
+Conservation Properties of Second Order Accurate Finite Difference
+Schemes in a Collocated Grid System
+Transport equations
+FD schemes for momentum eq.
+
+ui
+
+u 21 /2
+
+K
+
+(Div. − C2)
+(Adv. − C2)
+(Skew. − C2)
+(Pres. − R2)
+
+(
+s
+s
+(
+
+s
+s
+(
+×
+
+s
+s
+(
+∇
+
+Note. ( is conservative a priori, s is conservative if (Cont. − C2) = 0, × is not
+conservative. ∇ has an error of O(1t · h 2 ) even if (Cont. − C2) = 0.
+
+6.2. Fourth Order Accurate Schemes in a Collocated Grid System
+Next, we outline fourth order accurate finite difference schemes in a collocated grid
+system. The continuity is discretized in the same way as Eq. (79) of the staggered grid
+system, but using the interpolated flux velocities:
+(Cont. − C4) ≡
+
+1 δ3 Fi
+9 δ1 Fi
+−
+= 0.
+8 δ1 xi
+8 δ3 xi
+
+(126)
+
+Fourth order accurate equations corresponding to Eqs. (116), (117), and (118) are
+u in+1 = u i∗ − α1t (Pres. − R4)i ,
+
+(127)
+
+= 0,
+µ
+¶
+9 ∗ 1xi 1 ∗ 3xi
+Fin+1 =
+ui − ui
+− α1t (Pres. − S4)i .
+8
+8
+
+(128)
+
+(Cont. − C4)
+
+n+1
+
+(129)
+
+The Poisson equation for the pressure resulting from Eqs. (128) and (129) is
+9 δ1
+8 δ1 xi
+
+µ
+
+1 δ3 p
+9 δ1 p
+−
+8 δ1 xi
+8 δ3 xi
+
+1 9 δ1
+=
+α1t 8 δ1 xi
+
+µ
+
+¶
+−
+
+1 δ3
+8 δ3 xi
+
+9 ∗ 1xi 1 ∗ 3xi
+u
+− ui
+8 i
+8
+
+µ
+
+¶
+
+1 δ3 p
+9 δ1 p
+−
+8 δ1 xi
+8 δ3 xi
+
+1 1 δ3
+−
+α1t 8 δ3 xi
+
+µ
+
+¶
+¶
+9 ∗ 1xi 1 ∗ 3xi
+.
+u
+− ui
+8 i
+8
+
+(130)
+
+The convective schemes that are equivalent if (Cont. − C4) = 0 are
+1x
+
+3x
+
+(Div. − C4)i ≡
+
+9 δ1 F j ū i j
+1 δ3 F j ū i j
+−
+,
+8 δ1 x j
+8 δ3 x j
+
+(Adv. − C4)i ≡
+
+9 δ1 u i
+Fj
+8 δ1 x j
+
+(Skew. − C4)i ≡
+
+1
+1
+(Div. − C4)i + (Adv. − C4)i .
+2
+2
+
+1x j
+
+−
+
+1 δ3 u i
+Fj
+8 δ3 x j
+
+(131)
+
+3x j
+
+,
+
+(132)
+(133)
+
+112
+
+MORINISHI ET AL.
+
+TABLE 11
+Conservation Properties of Fourth Order Accurate Finite Difference
+Schemes in a Collocated Grid System
+Transport equations
+FD schemes for momentum eq.
+
+ui
+
+u 21 /2
+
+K
+
+(Div. − C4)
+(Adv. − C4)
+(Skew. − C4)
+(Pres. − R4)
+
+(
+s
+s
+(
+
+s
+s
+(
+×
+
+s
+s
+(
+∇
+
+Note. ( is conservative a priori, s is conservative if (Cont. − C4) = 0, × is not
+conservative. ∇ has an error of O(1t · h 4 ) even if (Cont. − C4) = 0.
+
+(Adv. − C4)i is related to (Div. − C4)i via
+(Adv. − C4)i = (Div. − C4)i − u i · (Cont. − C4).
+
+(134)
+
+(Div. − C4)i is conservative a priori in the momentum equation. The product between u 1
+and (Skew. − C4)1 can be rewritten as
+u 1 · (Skew. − C4)1 =
+
+9 δ1 F j ug
+1u1
+8
+δ1 x j
+
+1x j
+
+/2
+
+−
+
+1 δ3 F j ug
+1u1
+8
+δ3 x j
+
+3x j
+
+/2
+
+.
+
+(135)
+
+Therefore, (Skew. − C4)i is conservative a priori in the transport equation of u 21 /2. (Skew. −
+C4)i is also conservative a priori in the transport equation of K , u 22 /2 and u 23 /2. Thus, the
+conservation properties of (Div. − C4)i , (Adv. − C4)i , and (Skew. − C4)i are determined.
+Once again, the pressure term is seen to violate kinetic energy conservation, with the error
+resulting from the difference between (Cont. − R4) and (Cont. − C4). It can be shown that
+this difference scales like
+(Cont. − R4) − (Cont. − C4) = O(1t · h 4 ).
+
+(136)
+
+Therefore, (Pres.− R4)i leads to a conservation error of O(1t ·h 4 ) in the transport equation
+of kinetic energy. Table 11 shows conservation properties of the fourth order accurate finite
+difference schemes in a collocated grid system.
+Finally, we note that the transport equation of a passive scalar, θ , is usually centered at
+the pressure node in a staggered grid system. In a collocated grid system, a similar grid
+arrangement exists for u i and Fi . Thus by analogy, we can use the results of this section to
+infer the conservation properties for the passive scalar equation in a staggered grid system.
+In particular, Eqs. (120), (121), and (122) (with u i replaced by θ and F j replaced by U j ) are
+conservative second order accurate convective schemes for a passive scalar in a staggered
+grid system. Likewise, Eqs. (131), (132), and (133) can be used to generate conservative
+fourth order accurate convective schemes [4].
+7. NON-UNIFORM GRID ARRANGEMENT AND BOUNDARY CONDITIONS
+
+The preceding analysis has been conducted under the assumption of a uniform grid.
+In this section we generalize the analysis to non-uniform grid systems and discuss the
+treatment of non-periodic boundary conditions. We shall restrict our attention to the fourth
+order accurate schemes in a staggered grid system. Generalizations of the other schemes
+can be accomplished in an analogous manner. For simplicity, we also restrict our attention
+to meshes that are non-uniform in only one direction.
+
+DIFFERENCE SCHEMES FOR INCOMPRESSIBLE FLOW
+
+113
+
+7.1. Non-uniform Grid Treatment for Fourth Order Accurate Finite Difference Schemes in
+a Staggered Grid System
+Let y be the non-uniform direction with point distribution y j . A straightforward extension
+of Eqs. (26) and (27) for differentiation and interpolation on the non-uniform mesh is
+¯
+φ(y j+n/2 ) − φ(y j−n/2 )
+δn φ ¯¯
+≡
+,
+(137)
+¯
+δn y y j
+y j+n/2 − y j−n/2
+ny
+
+φ̄ | y j ≡
+
+(y j − y j−n/2 )φ(y j+n/2 ) + (y j+n/2 − y j )φ(y j−n/2 )
+.
+y j+n/2 − y j−n/2
+
+(138)
+
+Unfortunately the above formulas do not satisfy Eqs. (36) to (42), and therefore a simple
+replacement of the uniform mesh operators with these forms will not result in conservative
+schemes on a non-uniform mesh. More importantly, no operators appear to exist that result
+in fourth order accuracy while remaining fully conservative on a non-uniform mesh. One
+must therefore make a choice between strict conservation and strict fourth order accuracy.
+If accuracy is to be sacrificed, full conservation can be achieved on a non-uniform mesh
+through the use of the operators
+¯
+φ(y j+n/2 ) − φ(y j−n/2 )
+δn φ ¯¯
+,
+(139)
+≡
+¯
+δn y y j
+n · (y j+1/2 − y j−1/2 )
+ny
+
+φ̄ | y j ≡
+
+φ(y j+n/2 ) + φ(y j−n/2 )
+.
+2
+
+(140)
+
+These operators satisfy Eqs. (36) to (42) and therefore lead to fully conservative schemes.
+We shall denote the use of Eqs. (139) and (140) in the second and fourth order divergence
+forms as (Div. − S2 − F) and (Div. − S4 − F), respectively, where the −F stands for
+fully conservative. Unfortunately the loss of accuracy in this formulation is substantial with
+(Div.− S4− F) dropping to second order on a non-uniform mesh. Note that (Div.− S2− F)
+is actually identical to (Div. − S2) and thus retains second order accuracy, even on a nonuniform mesh.
+If high order accuracy is desired, it is possible to optimize the scheme so that it remains
+fourth order on a non-uniform mesh at the expense of a slight conservation error. As we
+shall see, the conservation error itself can be limited to fourth order in the mesh spacing
+and thus such a scheme may still be useful even for high Reynolds number calculations.
+In order to illustrate the procedure, we start with the advective form, (Adv. − S4), as this
+in (Adv.− S4)
+form will require the least amount of modification [5]. A discrete form of V δU
+δy
+on a non-uniform grid is
+¶¯
+µ
+δU ¯¯
+U j+1 − U j
+U j − U j−1
+V
+= C 1+
++ C 1−
+j · V j+1/2
+j · V j−1/2
+¯
+δy
+y j+1 − y j
+y j − y j−1
+j
++ C 3+
+j · V j+3/2
+
+U j+3 − U j
+U j − U j−3
++ C 3−
+,
+j · V j−3/2
+y j+3 − y j
+y j − y j−3
+
+(141)
+
+where the four weights are
+(y j+3 − y j )(y j − y j−3 )(y j − y j−1 )
+, (142a)
+[(y j+3 − y j )(y j − y j−3 ) − (y j+1 − y j )(y j − y j−1 )](y j+1 − y j−1 )
+(y j+3 − y j )(y j − y j−3 )(y j+1 − y j )
+C 1−
+, (142b)
+j =
+[(y j+3 − y j )(y j − y j−3 ) − (y j+1 − y j )(y j − y j−1 )](y j+1 − y j−1 )
+
+C 1+
+j =
+
+114
+
+MORINISHI ET AL.
+
+C 3+
+j =
+
+(y j+1 − y j )(y j − y j−1 )(y j − y j−3 )
+, (142c)
+[(y j+3 − y j )(y j − y j−3 ) − (y j+1 − y j )(y j − y j−1 )](y j+3 − y j−3 )
+
+C 3−
+j =
+
+(y j+1 − y j )(y j − y j−1 )(y j+3 − y j )
+. (142d)
+[(y j+3 − y j )(y j − y j−3 ) − (y j+1 − y j )(y j − y j−1 )](y j+3 − y j−3 )
+
+V j+n/2 and V j−n/2 in Eq. (141) are obtained via fourth order interpolation in y at the locations
+y j+n/2 = (y j+n + y j )/2 and y j−n/2 = (y j + y j−n )/2, respectively. They are also shifted
+half a cell in the x direction using fourth order interpolation (35). The interpolations are
+such that the scheme collapses to Eq. (102) on a uniform grid, and thus will have the desired
+conservation properties in this limit. On a non-uniform mesh, the scheme is fourth order
+)), but has a fourth
+accurate when grid stretching is smooth (formal accuracy is O(h 4 + h 3 dh
+dy
+order error in kinetic energy conservation. We shall refer to this scheme as (Adv. − S4 − S)i ,
+where the S denotes that the scheme is fourth order even on a stretched mesh.
+7.2. Boundary Conditions
+As far as non-periodic boundary conditions are concerned, we restrict our attention to a
+solid wall. We work in the context of ghost points that extend beyond the boundaries so that
+a consistent stencil can be used on the interior as well as near the boundaries.
+The boundary conditions can be designed to ensure global momentum conservation in
+the non-periodic and perhaps non-uniform direction if the following discrete relation holds
+¯
+δφ ¯¯
+(h y ) j ¯ = φ N +1/2 − φ1/2 ,
+δy j
+j=1
+
+N
+X
+
+(143)
+
+where δφ/δy is an arbitrary finite difference operator, and (h y ) j = (y j+1/2 − y j−1/2 ).
+j = 1/2 and j = N + 1/2 denote the lower and upper walls, respectively. We shall enforce
+this condition for the fully conservative scheme, (Div. − S4 − F).
+The viscous term requires the second derivative of streamwise velocity component, U ,
+in the wall normal direction. This quantity is discretized as follows near the wall
+Ã
+¯ !¯
+¯
+δ1 δU ¯¯ F ¯¯
+δ 2 U ¯¯
+=
+,
+δy 2 ¯ j
+δ1 y δy ¯ ¯ j
+(144)
+¯
+¯
+¯
+∂[U L (y)| j+1/2 ] ¯¯
+(h y ) j (h y ) j+1 ∂ 3 [U L (y)| j+1/2 ] ¯¯
+δU ¯¯ F
+≡
+−
+,
+¯
+¯
+δy ¯ j+1/2
+∂y
+24
+∂ y3
+j+1/2
+j+1/2
+where U L (y) is the Lagrangian interpolation of U defined as
+U L (y)| j+1/2 =
+
+(y − y j )(y − y j+1 )(y − y j+2 )
+U j−1
+(y j−1 − y j )(y j−1 − y j+1 )(y j−1 − y j+2 )
++
+
+(y − y j−1 )(y − y j+1 )(y − y j+2 )
+Uj
+(y j − y j−1 )(y j − y j+1 )(y j − y j+2 )
+
++
+
+(y − y j−1 )(y − y j )(y − y j+2 )
+U j+1
+(y j+1 − y j−1 )(y j+1 − y j )(y j+1 − y j+2 )
+
++
+
+(y − y j−1 )(y − y j )(y − y j+1 )
+U j+2 .
+(y j+2 − y j−1 )(y j+2 − y j )(y j+2 − y j+1 )
+
+(145)
+
+DIFFERENCE SCHEMES FOR INCOMPRESSIBLE FLOW
+
+115
+
+Mass conservation gives boundary conditions for the wall normal velocity components,
+V−1/2 and VN +3/2 [5]:
+V−1/2 = 2V1/2 − V3/2 ,
+
+(146a)
+
+VN +3/2 = 2VN +1/2 − VN −1/2 .
+
+(146b)
+
+Momentum conservation for the convection term in the streamwise velocity equation gives
+the following boundary conditions:
+(V̄ x Ū 3y )−1/2 = 27(V̄ x Ū 1y )1/2 − (V̄ x Ū 3y )3/2 − (V̄ x Ū 3y )1/2 − 24V1/2 U1/2 ,
+
+(147a)
+
+(V̄ x Ū 3y ) N +3/2 = 27(V̄ x Ū 1y ) N +1/2 − (V̄ x Ū 3y ) N −1/2 − (V̄ x Ū 3y ) N +1/2 − 24VN +1/2 U N +1/2 ,
+(147b)
+9
+1
+V̄ x ≡ V̄ 1x − V̄ 3x .
+8
+8
+Boundary conditions for the streamwise velocity component, U0 , U−1 , U N +1 , and U N +2 are
+obtained from the solution of the two equations
+¯
+j = 0, N ,
+U L (y j+1/2 )¯ j+1/2 = U j+1/2 ,
+¯
+£
+¤
+∂ 3 U L (y)| j+1/2 ¯¯
+= 0,
+j = 0, N .
+¯
+¯
+∂ y3
+
+(148)
+(149)
+
+j+1/2
+
+For a uniform grid, the solution to these equations is
+8
+1
+U1/2 − 2U1 + U2 ,
+3
+3
+U−1 = 8U1/2 − 9U1 + 2U2 ,
+U0 =
+
+8
+1
+U N +1/2 − 2U N + U N −1 ,
+3
+3
+U N +2 = 8U N +1/2 − 9U N + 2U N −1 .
+U N +1 =
+
+(150a)
+(150b)
+(150c)
+(150d)
+
+For a non-uniform grid, the solution will be of the same form but with the coefficients being
+dependent on ratios of the mesh spacings in the vicinity of the wall.
+We must also specify V−3/2 and VN +5/2 for use in the wall normal momentum equation.
+These values are obtained from the mass conservation constraint applied at j = 0 and
+j=N +1
+¶
+µ
+1 δ3 U
+9 δ1 U
+,
+(151a)
+−
+V−3/2 = 27V1/2 − 26V3/2 − 24(h y )0
+8 δ1 x
+8 δ3 x 0
+¶
+µ
+1 δ3 U
+9 δ1 U
+−
+. (151b)
+VN +5/2 = 27VN +1/2 − 26VN −1/2 + 24(h y ) N +1
+8 δ1 x
+8 δ3 x N +1
+Here we assume that (h y )0 = (h y )1 and (h y ) N +1 = (h y ) N . The wall boundary condition for
+the pressure term, ∂ p/∂ y, is constructed to satisfy the following conservation constraint
+¯
+N −1
+X
+δp ¯
+(h y ) j+1/2 ¯¯
+= p N − p1 .
+(152)
+δy j+1/2
+j=1
+
+116
+
+MORINISHI ET AL.
+
+This condition leads to
+p0 = 2 p1 − p 2 ,
+
+(153a)
+
+p N +1 = 2 p N − p N −1 .
+
+(153b)
+
+Simpler boundary conditions can be used if strict conservation is not required. In this
+work we use the analytical solution for Stokes flow [15] as the wall boundary condition for
+the fourth order advective form, (Adv. − S4 − S). The Stokes flow boundary condition is
+implemented by simply requiring that U (−y) = −U (y) and V (−y) = V (y) near the wall
+at y = 0.
+8. NUMERICAL TESTS
+
+8.1. Periodic Inviscid Flow
+To confirm the results of the previous sections with numerical tests, inviscid flow simulations are performed on a two-dimensional periodic domain. The analytical conservation requirements dictate that the total momentum, hu i i, and total kinetic energy, hK i ≡ 12 hv12 +v22 i,
+should be conserved in time. The continuity and momentum equation are solved with several
+finite difference schemes in regular, staggered, and collocated grid systems. The periodic
+region is 2π × 2π (L = 2π), and a 16 × 16 mesh is used. Solenoidal initial velocity fields
+are generated from a stream function constructed from homogeneous random numbers. The
+velocity fields are normalized to hv1 i = hv2 i = 0 and hK 0 i = 1.0. A third order Runge–
+Kutta scheme [16] is used for the time advancement. The Poisson equation for the pressure
+is solved by using fast Fourier transforms (FFT).
+Figure 4 shows the error of the total kinetic energy, hK − K 0 i, after an integration time of
+√
+10L/(2π hK 0 i), for the proper second order finite difference scheme in a staggered grid
+system. Kinetic energy is not conserved exactly since the third order Runge–Kutta time
+stepping method introduces a slight dissipative error. As expected, the time stepping error
+decreases with the cube of 1t, and we observe no violation of kinetic energy conservation
+due to the spatial scheme. The same behavior is observed in the solutions of the other proper
+schemes in regular and staggered grid systems.
+
+FIG. 4. Kinetic energy conservation error as a function of time step for several finite difference schemes.
+
+DIFFERENCE SCHEMES FOR INCOMPRESSIBLE FLOW
+
+117
+
+TABLE 12
+Kinetic Energy Conservation Error for Various Finite Difference
+Schemes in Regular and Staggered Grid Systems
+Convective schemes
+
+hK − K 0 i at T = 10
+
+(Div. − R2)
+(Div. − R4)
+(Div. − S2)
+(Div. − S4)
+(Div. − R2S)
+(Adv. − R2S)
+(Rot. − R2S)
+(Skew. − R2)
+(Div. − S4A)
+(Adv. − S4A)
+(Skew. − S4A)
+(Adv. − S4K )
+
+−0.782143 × 10−8
+−0.193674 × 10−7
+−0.163436 × 10−7
+−0.319145 × 10−7
++∞ (diverged )
++∞ (diverged )
+−0.213400 × 10−6
+−0.782143 × 10−8
++0.244368 × 10−1
++0.317386 × 10−1
+−0.257874 × 10−7
++0.725221 × 10−1
+
+Note. Consistency between the discrete continuity and pressure term with
+regard to the accuracy of the convection schemes and to the grid system are used.
+1t = 0.001.
+
+As predicted by Eqs. (125) and (136), both the second and fourth order finite difference
+schemes in a collocated grid system conserve kinetic energy only to order 1t. This scaling
+is verified in Fig. 4. Note that the error from the collocation scheme is dissipative in these
+tests and the calculation is therefore stable. It is also important to note that the conservation
+errors for the second and fourth order accurate finite difference schemes in a collocated grid
+system with 1t = 0.001 are larger than those of the proper schemes in regular and staggered
+grid systems with 1t = 0.1. Therefore, we do not recommend the use of the collocated grid
+system for high Reynolds number unsteady flow simulations.
+The computational results for several other schemes in regular and staggered grid systems
+are shown in Table 12. A time increment of 1t = 0.001 is selected for the computations.
+The proper divergence forms in the regular and staggered grid systems conserve kinetic
+energy to within the time marching error. The corresponding proper advective and skewsymmetric forms are also seen to be conservative. The results from the standard divergence
+and advective forms in the regular grid system, (Div. − R2S) and (Adv. − R2S), diverge.
+(Skew. − R2) is equivalent to (Div. − R2), and is also conservative. Although the rotational form, (Rot. − R2S), appears to give good results, the scheme does not conserve
+u 21 , u 22 , u 23 . Existing fourth order schemes in the staggered grid system, (Div.− S4A), (Adv.−
+S4A), and (Adv. − S4K ), produce errors that increase gradually with time. This indicates
+that the schemes are at least weakly unstable. The A-Domis type skew-symmetric form,
+(Skew. − S4A), conserves kinetic energy, but momentum conservation is not ensured.
+The results in Table 12 were generated with the appropriate combinations of the discretized continuity and pressure terms. The importance of the correct combination is
+illustrated in Table 13, where inconsistent continuity and pressure forms are used. It is
+apparent that kinetic energy is conserved only when the proper combination is used.
+8.2. Evolution of Small Disturbances in Two-Dimensional Plane Channel Flow
+In order to validate the order of accuracy of the schemes described in Section 7, we
+simulate the growth of low amplitude eigenmodes in laminar channel flow using a non-
+
+118
+
+MORINISHI ET AL.
+
+TABLE 13
+Kinetic Energy Conservation Error for (Div. − S4) with Several
+Combinations of the Discretized Continuity and Pressure Term in
+a Staggered Grid System
+(Div. − S4)
+
+hK − K 0 i at T = 10
+
+with (Pres. − S2) & (Cont. − S2)
+with (Pres. − S2) & (Cont. − S4)
+with (Pres. − S4) & (Cont. − S4)
+
++0.212040 × 10−1
++0.182125 × 10−2
+−0.319145 × 10−7
+
+Note. 1t = 0.001.
+
+uniform mesh in the wall-normal direction. We compare the computed eigenmode growth
+rate with the exact result obtained by solving the Orr–Sommerfeld eigenvalue problem.
+This procedure has been used by Malik et al. [17], among others, to measure the accuracy
+of different numerical methods.
+The exact solution of the Orr–Sommerfeld problem can be written as
+½
+U (x, y, t) = (1 − y 2 ) + ε · Real
+
+¾
+dφ(y)
+exp[i(αx − ωt)] ,
+dy
+
+V (x, y, t) = −ε · Real{iαφ(y) exp[i(αx − ωt)]},
+
+(154)
+(155)
+
+where φ(y) is the disturbance eigenfunction, y is the wall normal direction (−1 ≤ y ≤ +1),
+α is the wavenumber in the streamwise direction, ω = ωr + iωi is the temporal frequency,
+and ε is the perturbation amplitude. In this case we choose Re = 8000 and α = 1. The only
+unstable mode has ωr = 2.47075 × 10−1 and ωi = 2.66441 × 10−3 , and its eigenfunction,
+φ(y), is computed by the algorithm of Orszag [18]. With the eigenfunction determined, an
+initial velocity field is generated by taking ε = 1 × 10−5 and setting t = 0 in Eqs. (154)
+and (155).
+Before advancing the simulations in time, the accuracy of the convective schemes are
+checked by simply differentiating the initial condition and comparing with the exact derivatives computed from the eigenfunction in its Chebyshev–Fourier representation. In order
+to establish order of accuracy, six different grid resolutions (M × N ), 8 × 16, 16 × 32,
+32 × 64, 64 × 128, 128 × 256, and 256 × 512 are used. We consider both uniform and
+stretched grids in order to verify that the order of accuracy is unaltered by mesh stretching.
+For the stretched grid, we use a hyperbolic-tangent function to distribute the wall normal
+velocity points, YV ( j) = y j+1/2 ( j = 0, 1, 2, . . . , N )
+YV ( j) =
+
+tanh [γ (2 j/N − 1)]
+.
+tanh (γ )
+
+(156)
+
+The stretching parameter, γ , is taken to be 2.75. The grid is uniform in the streamwise direction (1x = 2π/M). The error associated with (Div. − S2 − F) is computed according to
+"
+¶¯ #2 )1/2
+µ
+Z +1 ( M−1
+∂U V ¯¯
+∂UU
+1 X
++
+dy.
+(157)
+(Div. − S2 − F)1 −
+M i=0
+∂x
+∂ y ¯xi ,y
+−1
+The second term in the sum in Eq. (157) is computed analytically using Eqs. (154) and
+
+DIFFERENCE SCHEMES FOR INCOMPRESSIBLE FLOW
+
+119
+
+FIG. 5. Error in the numerical approximation of the convective term as a function of the number of mesh
+points. The test velocity field is composed of the small disturbance eigenfunction for laminar channel flow at
+Reynolds number 8000.
+
+(155) at t = 0. The error associated with (Div. − S4 − F) and (Adv. − S4 − S) are computed
+in a similar manner.
+Figure 5 shows the rate of convergence for the convective schemes (Div.−S2−F), (Div.−
+S4 − F), and (Adv. − S4 − S). The convergence rates are seen to follow the expected trends
+for the uniform grid. The small differences between (Div. − S4 − F) and (Adv. − S4 − S)
+for the uniform mesh case are due to differences in the wall boundary treatment. When
+the grid is stretched we see that (Adv. − S4 − S) remains fourth order accurate, whereas
+(Div. − S4 − F) reduces to second order. We also see that (Div. − S2 − F) remains second
+order, even on the stretched mesh.
+Next, the initial solution is advanced in time for 3.9 eigenfunction periods (2π/ωr )
+and the growth rate at the end of run is compared with the exact value. A semi-implicit
+time marching algorithm is used where the diffusion term in the wall normal direction
+is treated implicitly with the Crank–Nicolson scheme, and a third order Runge–Kutta
+scheme [16] is used for all other terms. The fractional step method [19] is used in order to enforce the divergence free condition. The resulting Poisson equation for the pressure is solved exactly using a Fourier Transform in the streamwise direction and either a
+tri- or septa-diagonal matrix algorithm in the wall normal direction for the second and
+fourth order schemes, respectively. The same set of 5 meshes discussed previously is
+used in order to determine convergence rates. The time increments for the five meshs
+are 0.04, 0.02, 0.01, 0.005, and 0.0025. The maximum CFL numbers are about 0.05 for all
+runs.
+Figure 6 shows the error in the growth rate given by (Div.− S2− F), (Div.− S4− F), and
+(Adv. − S4 − S). Again we see that (Adv. − S4 − S) produces true fourth order convergence
+whereas (Div. − S4 − F) is limited to second order.
+8.3. Large Eddy Simulation of Plane Channel Flow
+Further numerical tests of the schemes described in Section 7 are performed using plane
+channel flow. We consider fully developed incompressible flow and make use of periodic
+
+120
+
+MORINISHI ET AL.
+
+FIG. 6. Error in the eigenfunction growth rate at t = 100 as a function of number of mesh points.
+
+boundary conditions in the streamwise and spanwise directions. The time marching algorithm is the same as described in the previous subsection. The dynamic subgrid scale (SGS)
+model [20] with the least square technique [21] and averaging in homogeneous directions
+is used. For the purpose of the dynamic model, test filtering is performed in the spanwise
+and streamwise directions. Simulations are conducted at two Reynolds numbers: Re = 180
+and 650, based on the channel half width and friction velocity.
+Figures 7 and 8 show the profiles of mean streamwise velocity and velocity fluctuations
+respectively for the schemes (Div.−S2−F), (Div.−S4−F), and (Adv.−S4−S) at Re = 180.
+Filtered DNS data [22] at the same Reynolds number are plotted as a reference in the figures.
+The logarithmic law for the mean velocity profile (U + = 2.5 · log(y + ) + 5.5) is also plotted
+in Fig. 7. In the figures, y + = u τ y/ν is the wall unit and U + = U/u τ is mean streamwise
+velocity in the wall variables, u 0 , v 0 , and w0 are the resolved velocity fluctuations in the
+streamwise, wall normal, and spanwise directions, respectively, and hu 0 v 0 i is the resolved
+Reynolds stress. The computational box is 4π × 2 × 4π/3 and 32 × 32 × 32 mesh points
+are used. The wall normal grid is stretched according to Eq. (156) with γ = 2.40. In this
+case, the grid spacings in wall units are 1x + = 70.69 and 1z + = 23.56.
+The mean velocity is seen to be overpredicted in the logarithmic region when the second
+order scheme is used. This discrepancy is reduced when the higher order schemes are used,
+
+FIG. 7. Mean streamwise velocity at Re = 180 (LES, box 4π × 2 × 4π/3, 32 × 32 × 32 grid).
+
+DIFFERENCE SCHEMES FOR INCOMPRESSIBLE FLOW
+
+121
+
+FIG. 8. Velocity fluctuations at Re = 180 (LES, box 4π × 2 × 4π/3, 32 × 32 × 32 grid).
+
+with the true fourth order scheme, (Adv. − S4 − S), giving the best results. The streamwise
+velocity fluctuation is overpredicted by the second order scheme whereas the spanwise and
+wall-normal fluctuations are underpredicted. Again these discrepancies are reduced when
+the higher order schemes are used with (Adv. − S4 − S) giving slightly superior results.
+In order to measure the effect of the numerical error unambiguously, the Re = 180 simulations are repeated without the use of a subgrid-scale model. In this case the results
+are compared with a spectral simulation (Fourier–Chebyshev–Fourier) performed with the
+same number of mesh points, again without a subgrid-scale model. The spectral method can
+be regarded as the limiting case for a higher order accurate scheme. The spectral algorithm
+is the Kleiser–Schumann method [23] with Werne’s modification [24], and is based on the
+velocity and pressure formulation. Figures 9 and 10 show the profiles of mean streamwise
+velocity and velocity fluctuations respectively for (Div. − S2 − F), (Div. − S4 − F), and
+(Adv. − S4 − S).
+The trends shown in Figs. 9 and 10 are nearly identical to those shown in Figs. 7 and 8,
+and thus we can conclude that the discrepancies caused by the second order method are due
+to the numerical error and not a shortcoming of the subgrid-scale model. We also see that
+the finite difference results are closer to the spectral reference case when the higher order
+schemes are used.
+Figures 11 and 12 show the mean velocity and velocity fluctuation profiles, respectively,
+for (Div. − S2 − F), (Div. − S4 − F), and (Adv. − S4 − S) at Re = 650. Experimental data
+[25] at the same Reynolds number are plotted as a reference in the figures. The logarithmic
+velocity profile (U + = 2.5 · log(y + ) + 5.0) is also plotted in Fig. 11. The computational
+
+FIG. 9. Mean streamwise velocity at Re = 180 (No SGS model, box 4π × 2 × 4π/3, 32 × 32 × 32 grid).
+
+122
+
+MORINISHI ET AL.
+
+FIG. 10. Velocity fluctuations at Re = 180 (No SGS model, box 4π × 2 × 4π/3, 32 × 32 × 32 grid).
+
+box for this case is 2π × 2 × 2π/3 and 48 × 32 × 48 mesh points are used. The wall-normal
+mesh is stretched according to Eq. (156) with γ = 2.75. The grid spacings in wall units are
+1x + = 85.08 and 1z + = 28.36. The results are similar to the two previous cases with the
+higher order methods showing an improvement over the second order method.
+9. CONCLUSIONS
+
+Conservation of mass, momentum, and kinetic energy for incompressible flow was specified as analytical requirements for a proper set of discrete equations. Several pre-existing
+schemes in regular, staggered, and collocated grid systems were analyzed with regard to
+their conservation properties. Most of these schemes were found to violate one or more of the
+conservation properties. Both second and fourth order accurate fully conservative schemes
+were then derived where lacking for the regular and staggered mesh systems. A general
+procedure for constructing fully conservative schemes of arbitrary order in a staggered mesh
+system was also derived. Treatment for non-uniform meshes and non-periodic boundary
+conditions was given in detail for the new fourth order staggered mesh scheme. It was found
+that strict conservation and strict fourth order accuracy could not be obtained simultaneously
+on a non-uniform mesh. Accordingly, two alternative schemes were derived. The first is fully
+conservative but only formally second order accurate on a stretched mesh. The second is
+formally fourth order accurate on a stretched mesh but has a fourth order violation in kinetic
+energy conservation. The two schemes become identical on a uniform mesh where they are
+simultaneously conservative and fourth order accurate. Numerical tests on a non-uniform
+
+FIG. 11. Mean streamwise velocity at Re = 650 (LES, box 2π × 2 × 2π/3, 48 × 32 × 48 grid).
+
+DIFFERENCE SCHEMES FOR INCOMPRESSIBLE FLOW
+
+123
+
+FIG. 12. Velocity fluctuations at Re = 650 (LES, box 2π × 2 × 2π/3, 48 × 32 × 48 grid).
+
+mesh indicated a slight superiority of the fourth order, slightly non-conservative scheme.
+The higher order schemes were compared with a second order scheme for turbulent channel
+flow simulations and both variants were found to result in a significant improvement in the
+computed statistics.
+ACKNOWLEDGMENTS
+The authors thank Dr. H. Kaltenbach for his helpful suggestions. We also thank Dr. K. Jansen, Dr. W. Cabot,
+and Ms. D. Spinks. Y. Morinishi was supported by the Japanese Government Research Fellowship funds while at
+the Center for Turbulence Research.
+
+REFERENCES
+1. A. Arakawa, Computational design for long-term numerical integration of the equation of fluid motion:
+Two-dimensional incompressible flow, Part I, J. Comput. Phys. 1, 119 (1966).
+2. F. H. Harlow and J. E. Welch, Numerical calculation of time-dependent viscous incompressible flow of fluid
+with free surface, Phys. Fluids 8, 2182 (1965).
+3. S. Ghosal, An analysis of numerical errors in large-eddy simulations of turbulence, J. Comput. Phys. 125, 187
+(1996).
+4. M. A-Domis, Large-eddy simulation of a passive scalar in isotropic turbulence, J. Fluid Mech. 104, 55 (1981).
+5. T. Kajishima, Conservation properties of finite difference method, Trans. JSME 60-574B, 2058 (1994). [In
+Japanese]
+6. P. Beaudan and P. Moin, Flow Past a Circular Cylinder at Sub-Critical Reynolds Number, Rep. TF-62,
+Thermosciences Div., Dept. Mech. Eng., Stanford University, Stanford, CA, 1995.
+7. C. Canuto, M. Y. Hussaini, A. Quarteroni, and S. A. Zang, Spectral Methods in Fluid Dynamics (SpringerVerlag, New York/Berlin, 1988).
+8. J. Kim and P. Moin, Application of a fractional-step method to incompressible Navier–Stokes equations, J.
+Comput. Phys. 59, 308 (1985).
+9. P. Moin and J. Kim, Numerical investigation of turbulent channel flow, J. Fluid Mech. 118, 341 (1982).
+10. K. Horiuti, Comparison of conservative and rotational forms in large eddy simulation of turbulent channel
+flow, J. Comput. Phys. 71, 343 (1987).
+11. K. Horiuti, Anisotropic representation of the Reynolds stress in large eddy simulation of turbulent channel
+flow, in Proc. of Int. Symp. Comp. Fluid Dynamics, Nagoya, (1989), p. 233.
+12. S. A. Piacsek and G. P. Williams, Conservative properties of convection difference schemes, J. Comput. Phys.
+6, 392 (1970).
+13. Y. Zang, R. L. Street, and J. R. Koseff, A non-staggered grid, fractional step method for time-dependent
+incompressible Navier–Stokes equations in curvilinear coordinates, J. Comput. Phys. 114, 18 (1994).
+
+124
+
+MORINISHI ET AL.
+
+14. C. M. Rhie and W. L. Chow, A numerical study of the turbulent flow past an isolated airfoil with trailing edge
+separation, AIAA J. 21, 1525 (1983).
+15. H. K. Moffat, Viscous and resistive eddies near a sharp corner, J. Fluid Mech. 18, 1 (1964).
+16. A. Wray, Private communication, NASA-Ames Research Center, Moffett Field, CA, 1986.
+17. T. R. Malik, T. A. Zang, and M. Y. Hussaini, A spectral collocation method for the Navier–Stokes equations,
+J. Comput. Phys. 61, 64 (1985).
+18. S. A. Orszag, Accurate solution of the Orr–Sommerfeld stability equation, J. Fluid Mech. 50(4), 689 (1971).
+19. J. K. Dukowicz and A. S. Dvinsky, Approximation as a high order splitting for the implicit incompressible
+flow equations, J. Comput. Phys. 102, 336 (1992).
+20. M. Germano, U. Piomelli, P. Moin, and W. H. Cabot, A dynamic subgrid-scale eddy viscosity model, Phys.
+Fluids A 3, 1760 (1991).
+21. D. Lilly, A proposed modification of the Germano subgrid scale closure method, Phys. Fluids A 4, 633 (1992).
+22. J. Kim, P. Moin, and R. Moser, Turbulence statistics in fully developed channel flow at low Reynolds number,
+J. Fluid Mech. 177, 133 (1987).
+23. L. Kleiser and U. Schumann, Treatment of incompressibility and boundary conditions in 3-D numerical
+spectral simulations of plane channel flows, in Proceedings, 3rd-GAMM Conf. on Numerical Methods in
+Fluid Mechanics (1980), p. 165.
+24. J. Werne, Incompressibility and no-slip boundaries in the Chebyshev-tau approximation: Correction to Kleiser
+and Schumann’s influence-matrix solution, J. Comput. Phys. 120, 260 (1995).
+25. A. K. M. F. Hussain and W. C. Reynolds, The Mechanics of a Perturbation Wave in Turbulent Shear Flow,
+AFSOR Report, 70-1655TR, 1970.
+
+
